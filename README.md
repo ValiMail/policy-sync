@@ -4,16 +4,16 @@
 
 Valimail dotAuth policy sync Balena Block.
 
-This Balena Block synchronizes a JSON representation of the managed application policy to the local filesystem.
+This Balena Block manages a local copy of a pipe-separated and JSON representation of policy.
 
 ## What it does
 
 This Balena Block allows you to:
 
 * Retrieve the device's application policy from Valimail's dotAuth policy management engine.
-* Save the application policy to disk in json format.
+* Save the application policy to disk in JSON and pipe-separated format.
 
-Structure of the policy file:
+Structure of the JSON policy file:
 
 ```json
 {"name": "APPLICATION_NAME",
@@ -27,6 +27,15 @@ Structure of the policy file:
  ]
 }
 ```
+
+And the text representation (for supporting network access rules):
+
+```text
+role_name|some._device.example
+role_four|another._device.example
+```
+
+The text representation of the policy is a distilled version of what's in the JSON file. The text file will only represent the roles indicated in the `ROLES` environment variable.
 
 ## Steps for use
 
@@ -43,11 +52,12 @@ Structure of the policy file:
 
 Configuration is defined in environment variables:
 
-| Variable   | Description                                             |
-|------------|---------------------------------------------------------|
-| DANE_ID    | This is the device's DNS name.                          |
-| POLICY_URL | This is the URL for the Valimail dotAuth policy engine. |
-| APP_NAME   | This is the name of the application.                    |
+| Variable   | Description                                                  |
+|------------|--------------------------------------------------------------|
+| DANE_ID    | This is the device's DNS name.                               |
+| POLICY_URL | This is the URL for the Valimail dotAuth policy engine.      |
+| APP_NAME   | This is the name of the application.                         |
+| ROLES      | A comma-separated list of roles to represent in policy text. |
 
 ## docker-compose
 
@@ -74,7 +84,7 @@ volumes:
   policy:
 ```
 
-Mount the `policy` volume into the container needing to access the policy JSON. The policy file is named `policy.json`.
+Mount the `policy` volume into the container needing to access the policy JSON. Then files will be named `policy.json` and `policy.text`
 
 ## Notes
 

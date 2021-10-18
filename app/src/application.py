@@ -15,7 +15,7 @@ def main():
     config = get_config()
     crypto = Bootstrap(config["dane_id"], config["crypto_path"], config["app_uid"])
     policy_file = os.path.join(config["policy_file_dir"], "policy.json")
-    danish_mapping = os.path.join(config["policy_file_dir"], "mapping.json")
+    # danish_mapping = os.path.join(config["policy_file_dir"], "mapping.json")
 
     # Get the policy from disk, if it exists...
     try:
@@ -55,21 +55,21 @@ def main():
             current_policy = policy_from_file(policy_file)
             print("Updated policy:")
             pprint.pprint(current_policy)
-            write_radius_pkix_cd_manage_trust_infile(policy_json, config["ssids"], config["trust_infile_path"])
+            write_radius_pkix_cd_manage_trust_infile(policy_json, config["roles"], config["trust_infile_path"])
         time.sleep(120)
 
 
-def write_radius_pkix_cd_manage_trust_infile(policy_json, ssids, trust_infile_path):
+def write_radius_pkix_cd_manage_trust_infile(policy_json, roles, trust_infile_path):
     """Write the input file for radius_pkix_cd_manage_trust.py."""
-    ssid_list = ssids.split(",")
+    role_list = roles.split(",")
     tifile_lines = []
-    for ssid in ssid_list:
-        for role in policy_json["roles"]:
-            if role["name"] == ssid:
-                lines = ["{}|{}".format(ssid, supplicant) for supplicant in role["members"]]
+    for role in role_list:
+        for policy_role in policy_json["roles"]:
+            if policy_role["name"] == role:
+                lines = ["{}|{}".format(role, supplicant) for supplicant in role["members"]]
                 tifile_lines.extend(lines)
     if not tifile_lines:
-        print("No policy lines for trust infile! Ensure that SSIDs map to policy roles!")
+        print("No policy lines for trust infile! Ensure that roles map to policy roles!")
         return
     tifile_contents = "\n".join(tifile_lines)
     with open(trust_infile_path, "w") as tifile:
@@ -91,13 +91,6 @@ def policy_to_file(policy, file_path):
     return
 
 
-def decrypt_payload(key_file_path, encrypted_policy):
-    """Decrypt and return payload from JWE."""
-    key_contents = Crypto.get_file_contents(key_file_path)
-    decrypted = JWEWrapper.decrypt(key_contents, encrypted_policy)
-    return decrypted
-
-
 def get_policy_from_server(policy_url, application_name, dane_id):
     """Return JSON response from policy server."""
     params = {"application_name": application_name, "device_name": dane_id}
@@ -114,7 +107,7 @@ def get_config():
     """
     config = {}
     for x in ["policy_url", "policy_file_dir", "dane_id", 
-              "crypto_path", "policy_name", "app_uid", "ssids",
+              "crypto_path", "policy_name", "app_uid", "roles",
               "trust_infile_path"]:
         config[x] = os.getenv(x.upper())
     for k, v in config.items():
