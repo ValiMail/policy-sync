@@ -1,0 +1,13 @@
+version: "2"
+
+services:
+  policy-sync:
+    build: .
+    restart: always
+    volumes:
+      - "identity:/etc/dane_id"
+      - "policy:/var/valimail_policy"
+
+volumes:
+  identity:
+  policy:
