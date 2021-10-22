@@ -6,7 +6,7 @@ ENV APP_UID=0
 ENV DEBIAN_FRONTEND=noninteractive
 ENV POLICY_FILE_DIR=/var/valimail_policy
 
-COPY ./app /usr/src/
+COPY ./app/src/ /usr/src/
 
 COPY app/depends/ /tmp/depends/
 
@@ -16,6 +16,6 @@ RUN apt-get update && \
 RUN pip3 install --upgrade pip
 RUN pip3 install -r /tmp/depends/requirements.txt
 
-RUN mkdir -p POLICY_FILE_DIR
+RUN mkdir -p ${POLICY_FILE_DIR}
 
 CMD unbuffer python3 application.py

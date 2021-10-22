@@ -35,7 +35,7 @@ def main():
             encrypted_policy = get_policy_from_server(config["policy_url"], config["policy_name"], config["dane_id"])
         except json.decoder.JSONDecodeError:
             err = ("No policy available. "
-                   "Are we a member of {}?").format(config["policy_dns_name"])
+                   "Are we a member of {}?").format(config["policy_name"])
             print(err)
             time.sleep(30)
             continue
@@ -62,18 +62,18 @@ def main():
 def write_radius_pkix_cd_manage_trust_infile(policy_json, roles, trust_infile_path):
     """Write the input file for radius_pkix_cd_manage_trust.py."""
     role_list = roles.split(",")
-    tifile_lines = []
+    ti_file_lines = []
     for role in role_list:
         for policy_role in policy_json["roles"]:
             if policy_role["name"] == role:
-                lines = ["{}|{}".format(role, supplicant) for supplicant in role["members"]]
-                tifile_lines.extend(lines)
-    if not tifile_lines:
+                lines = ["{}|{}".format(role, supplicant) for supplicant in policy_role["members"]]
+                ti_file_lines.extend(lines)
+    if not ti_file_lines:
         print("No policy lines for trust infile! Ensure that roles map to policy roles!")
         return
-    tifile_contents = "\n".join(tifile_lines)
-    with open(trust_infile_path, "w") as tifile:
-        tifile.write(tifile_contents)
+    ti_file_contents = "\n".join(ti_file_lines)
+    with open(trust_infile_path, "w") as ti_file:
+        ti_file.write(ti_file_contents)
     print("Updated {}".format(trust_infile_path))
 
 
